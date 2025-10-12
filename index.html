@@ -2,37 +2,66 @@
 <html lang="he">
 <head>
     <meta charset="UTF-8">
-   <link rel="icon" href="https://www.reshot.com/preview-assets/icons/EQFBGJ6SY9/radio-EQFBGJ6SY9.svg" type="image/svg+xml">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://www.reshot.com/preview-assets/icons/EQFBGJ6SY9/radio-EQFBGJ6SY9.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תחנות הרדיו החרדיות</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Noto Sans Hebrew', sans-serif; /* גופן עברי מגוגל */
-            background-image: url('https://www.photo-art.co.il/wp-content/uploads/2015/09/BY1A4457.webp'); /* הוספת תמונה כרקע */
+        /* סגנונות לרקע הוידאו */
+        #video-background {
+            position: fixed; /* מקבע את הוידאו למסך */
+            right: 0;
+            bottom: 0;
+            min-width: 100%; 
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -100; /* שולח את הוידאו לרקע */
+            overflow: hidden;
             background-size: cover;
-            background-position: center;
+        }
+
+        /* סגנון לשכבה שחורה חצי שקופה מעל הוידאו כדי לשפר קריאות */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4); /* צבע שחור עם שקיפות של 40% */
+            z-index: -99; /* מעל הוידאו ומתחת לתוכן */
+        }
+        
+        /* סגנונות לתוכן הראשי */
+        body {
+            font-family: 'Noto Sans Hebrew', sans-serif;
             text-align: center;
             padding: 50px;
-            color: white; /* צבע טקסט לבן */
+            color: white; 
+            /* הסרנו את ה-background-image מכאן */
+            position: relative; /* נדרש כדי שהתוכן יהיה מעל הוידאו */
         }
+        
         h1 {
-            color: #fff;}
+            color: #fff;
+        }
         .radio-container {
             display: flex;
             justify-content: space-around;
             gap: 30px;
+            position: relative;
         }
         .radio-item {
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.4); /* הגדלת השקיפות כדי שהטקסט יהיה קריא יותר על רקע הוידאו */
             border-radius: 10px;
             padding: 20px;
             width: 250px;
             text-align: center;
-            transition: border 0.3s ease-in-out; /* מעבר חלק לשינוי הגבול */
+            transition: border 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* הוספת צל לשיפור ההפרדה מהרקע */
         }
         .radio-item.active {
-            border: 3px solid #ff9800; /* גבול כתום עבה לתחנה הפעילה */
+            border: 3px solid #ff9800;
         }
         .radio-item img {
             width: 150px;
@@ -65,12 +94,19 @@
     </style>
 </head>
 <body>
+    
+    <video autoplay muted loop id="video-background">
+        <source src="https://kcm.fm/static/video/1.webm" type="video/mp4"> 
+        הדפדפן שלך לא תומך ברקע וידאו.
+    </video>
+    
+    <div class="video-overlay"></div>
 
     <h1>האזנה לתחנות הרדיו החרדיות</h1>
     <p>בחר תחנה להאזנה</p>
 
     <div class="radio-container">
-  <div class="radio-item">
+        <div class="radio-item">
             <img src="https://www.likol.co.il/wp-content/uploads/2019/04/Station_Share_Image6_img__2.jpg" alt="רדיו מורשת">
             <h2>רדיו מורשת</h2>
             <a href="#" class="link-button" onclick="playAudio('https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_MORESHET.mp3?dist=rlive', this)">האזן עכשיו</a>
@@ -83,7 +119,7 @@
         </div>
 
         <div class="radio-item">
-            <img src="https://kol-barama.co.il/wp-content/uploads/2024/05/LOGO_KOL-BARAMA_WHITE-e1715205528822.png" alt="קול ברמה">
+            <img src="https://kol-barama.co.il/wp-content/uploads/2024/05/LOGO_KOL-BARAMA-e1715025070494-120x63.png" alt="קול ברמה">
             <h2>קול ברמה</h2>
             <a href="#" class="link-button" onclick="playAudio('https://cdn.cybercdn.live/Kol_Barama/Live_Audio/icecast.audio', this)">האזן עכשיו</a>
         </div>
@@ -100,7 +136,6 @@
             <a href="#" class="link-button" onclick="playAudio('https://media2.93fm.co.il/live-new', this)">האזן עכשיו</a>
         </div>
 
-      
     </div>
 
     <div>
@@ -115,16 +150,14 @@
             var audioPlayer = document.getElementById('audioPlayer');
             var audioSource = document.getElementById('audioSource');
             audioSource.src = audioURL;
-            audioPlayer.load();  // טוען את קובץ השמע
-            audioPlayer.play();  // משמיע את השמע
+            audioPlayer.load(); 
+            audioPlayer.play(); 
 
-            // הסר את הקלאס 'active' מכל תחנות הרדיו
             var radioItems = document.querySelectorAll('.radio-item');
             radioItems.forEach(item => {
                 item.classList.remove('active');
             });
 
-            // הוסף את הקלאס 'active' לתחנה שנלחצה
             clickedElement.closest('.radio-item').classList.add('active');
         }
     </script>
