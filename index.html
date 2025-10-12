@@ -6,30 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תחנות הרדיו החרדיות</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> 
     <style>
         /* סגנונות לרקע הוידאו */
         #video-background {
-            position: fixed; /* מקבע את הוידאו למסך */
+            position: fixed; 
             right: 0;
             bottom: 0;
             min-width: 100%; 
             min-height: 100%;
             width: auto;
             height: auto;
-            z-index: -100; /* שולח את הוידאו לרקע */
+            z-index: -100;
             overflow: hidden;
             background-size: cover;
         }
 
-        /* סגנון לשכבה שחורה חצי שקופה מעל הוידאו כדי לשפר קריאות */
+        /* שכבת כיסוי: הבהרנו ל-0.25 אטימות */
         .video-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* צבע שחור עם שקיפות של 40% */
-            z-index: -99; /* מעל הוידאו ומתחת לתוכן */
+            background: rgba(0, 0, 0, 0.25); 
+            z-index: -99; 
         }
         
         /* סגנונות לתוכן הראשי */
@@ -38,8 +39,8 @@
             text-align: center;
             padding: 50px;
             color: white; 
-            /* הסרנו את ה-background-image מכאן */
-            position: relative; /* נדרש כדי שהתוכן יהיה מעל הוידאו */
+            position: relative;
+            padding-bottom: 120px; 
         }
         
         h1 {
@@ -52,13 +53,13 @@
             position: relative;
         }
         .radio-item {
-            background-color: rgba(0, 0, 0, 0.4); /* הגדלת השקיפות כדי שהטקסט יהיה קריא יותר על רקע הוידאו */
+            background-color: rgba(0, 0, 0, 0.5); 
             border-radius: 10px;
             padding: 20px;
             width: 250px;
             text-align: center;
             transition: border 0.3s ease-in-out;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* הוספת צל לשיפור ההפרדה מהרקע */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         .radio-item.active {
             border: 3px solid #ff9800;
@@ -86,10 +87,70 @@
         .link-button:hover {
             background-color: #45a049;
         }
-        audio {
-            width: 80%;
-            margin-top: 20px;
-            border-radius: 10px;
+
+        /* הסתרת הנגן הסטנדרטי */
+        #audioPlayer {
+            display: none; 
+        }
+
+        /* סגנונות לנגן המותאם אישית */
+        #customPlayer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #1a1a1a; 
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000; 
+        }
+        #muteUnmuteButton {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            margin-right: 20px;
+            transition: color 0.2s;
+        }
+        #muteUnmuteButton:hover {
+            color: #ff9800;
+        }
+        #volumeControl {
+            display: flex;
+            align-items: center;
+            width: 250px; 
+            margin-left: 30px;
+        }
+        #volumeControl i {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        #volumeControl input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #555;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #volumeControl input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #ff9800;
+            border-radius: 50%;
+        }
+        #currentStationDisplay {
+            margin: 0 40px;
+            font-size: 18px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -109,56 +170,129 @@
         <div class="radio-item">
             <img src="https://www.likol.co.il/wp-content/uploads/2019/04/Station_Share_Image6_img__2.jpg" alt="רדיו מורשת">
             <h2>רדיו מורשת</h2>
-            <a href="#" class="link-button" onclick="playAudio('https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_MORESHET.mp3?dist=rlive', this)">האזן עכשיו</a>
+            <a href="#" class="link-button" onclick="playAudio('https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_MORESHET.mp3?dist=rlive', this, 'רדיו מורשת')">האזן עכשיו</a>
         </div>
 
         <div class="radio-item">
             <img src="https://kol-play.co.il/wp-content/themes/kolplay/images/logo.png" alt="קול פליי">
             <h2>קול פליי</h2>
-            <a href="#" class="link-button" onclick="playAudio('https://cdn.cybercdn.live/Kol_Barama/Music/icecast.audio', this)">האזן עכשיו</a>
+            <a href="#" class="link-button" onclick="playAudio('https://cdn.cybercdn.live/Kol_Barama/Music/icecast.audio', this, 'קול פליי')">האזן עכשיו</a>
         </div>
 
         <div class="radio-item">
             <img src="https://kol-barama.co.il/wp-content/uploads/2024/05/LOGO_KOL-BARAMA-e1715025070494-120x63.png" alt="קול ברמה">
             <h2>קול ברמה</h2>
-            <a href="#" class="link-button" onclick="playAudio('https://cdn.cybercdn.live/Kol_Barama/Live_Audio/icecast.audio', this)">האזן עכשיו</a>
+            <a href="#" class="link-button" onclick="playAudio('https://cdn.cybercdn.live/Kol_Barama/Live_Audio/icecast.audio', this, 'קול ברמה')">האזן עכשיו</a>
         </div>
 
         <div class="radio-item">
             <img src="https://kcm.fm/static/images/logo.svg" alt="קול חי מיוזיק">
             <h2>קול חי מיוזיק</h2>
-            <a href="#" class="link-button" onclick="playAudio('https://live.kcm.fm/livemusic', this)">האזן עכשיו</a>
+            <a href="#" class="link-button" onclick="playAudio('https://live.kcm.fm/livemusic', this, 'קול חי מיוזיק')">האזן עכשיו</a>
         </div>
 
         <div class="radio-item">
             <img src="data:image/svg+xml,%3csvg%20id='Group_5050'%20data-name='Group%205050'%20xmlns='http://www.w3.org/2000/svg'%20width='70.382'%20height='42.98'%20viewBox='0%200%2070.382%2042.98'%3e%3cg%20id='Group_4156'%20data-name='Group%204156'%20transform='translate(31.57%2013.207)'%3e%3cg%20id='Group_4155'%20data-name='Group%204155'%20transform='translate(0)'%3e%3cpath%20id='Path_1522'%20data-name='Path%201522'%20d='M64.579-53.441H62.993A4.834,4.834,0,0,0,58.1-49.085L56.667-35.4h5.965Z'%20transform='translate(-56.667%2053.441)'%20fill='%2300059b'/%3e%3c/g%3e%3c/g%3e%3cg%20id='Group_4158'%20data-name='Group%204158'%20transform='translate(0%2013.207)'%3e%3cg%20id='Group_4157'%20data-name='Group%204157'%3e%3cpath%20id='Path_1523'%20data-name='Path%201523'%20d='M.031-48.23A5.313,5.313,0,0,0,5.4-42.2L6.567-53.442H.6Z'%20transform='translate(0%2053.442)'%20fill='%23db1419'/%3e%3c/g%3e%3c/g%3e%3cg%20id='Group_4160'%20data-name='Group%204160'%20transform='translate(6.524%2013.207)'%3e%3cg%20id='Group_4159'%20data-name='Group%204159'%20transform='translate(0)'%3e%3cpath%20id='Path_1524'%20data-name='Path%201524'%20d='M29.317-47.74a5.39,5.39,0,0,0-5.268-5.7h-11L11.741-41.389A5.3,5.3,0,0,0,17.113-35.4l1.269-12.01h2.963A1.777,1.777,0,0,1,23.1-45.5L22.023-35.4H28.03Z'%20transform='translate(-11.71%2053.441)'%20fill='%23db1419'/%3e%3c/g%3e%3c/g%3e%3cg%20id='Group_4162'%20data-name='Group%204162'%20transform='translate(40.331%2013.331)'%3e%3cg%20id='Group_4161'%20data-name='Group%204161'%3e%3cpath%20id='Path_1525'%20data-name='Path%201525'%20d='M82.955-53.219H72.97l-.578,5.659h8.075a1.9,1.9,0,0,1,1.892,2.076L82.212-44.1c-.187,1.954-.846,2.971-2.866,3.135l-.618,5.659A9.34,9.34,0,0,0,88.153-43.9l.344-3.216a5.627,5.627,0,0,0-5.542-6.106'%20transform='translate(-72.393%2053.219)'%20fill='%2300059b'/%3e%3c/g%3e%3c/g%3e%3cg%20id='Group_4164'%20data-name='Group%204164'%20transform='translate(38.596%2020.699)'%3e%3cg%20id='Group_4163'%20data-name='Group%204163'%3e%3cpath%20id='Path_1526'%20data-name='Path%201526'%20d='M69.278-25.294h.041a6.761,6.761,0,0,0,6.521-5.987l.933-8.713H70.849Z'%20transform='translate(-69.278%2039.994)'%20fill='%2300059b'/%3e%3c/g%3e%3c/g%3e%3cg%20id='Group_4166'%20data-name='Group%204166'%20transform='translate(24.061%206.57)'%3e%3cg%20id='Group_4165'%20data-name='Group%204165'%3e%3cpath%20id='Path_1527'%20data-name='Path%201527'%20d='M53.151-65.354H53.11c-3.917.286-6.46,2.2-7.552,5.742a11.214,11.214,0,0,0-.563,2.4c-.367,3.461-1.807,16.531-1.807,16.531h6.089l.146-1.383.044-.531,1.31-12.05a6.381,6.381,0,0,1,6.418-5.742h1.461c0-1.14-.429-4.968-5.5-4.968'%20transform='translate(-43.188%2065.354)'%20fill='%2300059b'/%3e%3c/g%3e%3c/g%3e%3cg%20id='Group_4167'%20data-name='Group%204167'%20transform='translate(48.902%2021.967)'%3e%3cpath%20id='Path_1528'%20data-name='Path%201528'%20d='M-8.943-5.265-7.59.149A.63.63,0,0,1-8.363.91l-5.6-1.495a13.179,13.179,0,0,1-5.349,1.5c-.135.011-.266.036-.4.043V.938c-.152.005-.3.023-.454.023h-.026V9.124A21.422,21.422,0,0,0-5,2.83,21.422,21.422,0,0,0,1.286-11.889H-6.925A13.183,13.183,0,0,1-8.943-5.265'%20transform='translate(20.192%2011.889)'%20fill='%23db1419'/%3e%3c/g%3e%3cg%20id='Group_4168'%20data-name='Group%204168'%20transform='translate(48.902%200)'%3e%3cpath%20id='Path_1529'%20data-name='Path%201529'%20d='M-17.075-16.76A21.419,21.419,0,0,0-23.36-31.548a21.422,21.422,0,0,0-15.2-6.294v8.306l.026,0c.153,0,.3.018.454.023v-.023c.15.008.3.033.445.046A13.236,13.236,0,0,1-25.3-16.76Z'%20transform='translate(38.555%2037.842)'%20fill='%2300059b'/%3e%3c/g%3e%3cg%20id='Group_4240'%20data-name='Group%204240'%20transform='translate(0%200)'%3e%3cpath%20id='Path_1530'%20data-name='Path%201530'%20d='M0-34.167H70.382v-42.98H0Z'%20transform='translate(0%2077.147)'%20fill='none'/%3e%3c/g%3e%3c/svg%3e" alt="קול חי">
             <h2>קול חי</h2>
-            <a href="#" class="link-button" onclick="playAudio('https://media2.93fm.co.il/live-new', this)">האזן עכשיו</a>
+            <a href="#" class="link-button" onclick="playAudio('https://media2.93fm.co.il/live-new', this, 'קול חי')">האזן עכשיו</a>
         </div>
-
     </div>
 
     <div>
-        <audio id="audioPlayer" controls>
+        <audio id="audioPlayer">
             <source id="audioSource" src="" type="audio/mpeg">
             הדפדפן שלך לא תומך בנגן אודיו.
         </audio>
     </div>
 
+    <div id="customPlayer">
+        <button id="muteUnmuteButton" onclick="toggleMuteUnmute()">
+            <i class="fas fa-pause"></i> </button>
+        
+        <span id="currentStationDisplay">בחר תחנה להאזנה</span>
+
+        <div id="volumeControl">
+            <i class="fas fa-volume-down"></i> 
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" onchange="setVolume(this.value)">
+            <i class="fas fa-volume-up" style="margin-left: 10px;"></i> 
+        </div>
+    </div>
+
     <script>
-        function playAudio(audioURL, clickedElement) {
-            var audioPlayer = document.getElementById('audioPlayer');
-            var audioSource = document.getElementById('audioSource');
-            audioSource.src = audioURL;
-            audioPlayer.load(); 
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioSource = document.getElementById('audioSource');
+        const muteUnmuteButton = document.getElementById('muteUnmuteButton'); 
+        const stationDisplay = document.getElementById('currentStationDisplay');
+        const volumeSlider = document.getElementById('volumeSlider');
+
+        let lastVolume = 1; 
+
+        // נאתחל את הווליום על פי המחוון
+        audioPlayer.volume = volumeSlider.value;
+        
+        // נגדיר מצב התחלתי: כפתור Play כיוון שהשיר מושתק (זה נדרש ע"י דפדפנים)
+        muteUnmuteButton.innerHTML = '<i class="fas fa-play"></i>';
+
+        // פונקציה להפעלת שמע
+        function playAudio(audioURL, clickedElement, stationName) {
+            
+            // 1. טעינת הכתובת החדשה והפעלה
+            if (audioSource.src !== audioURL) {
+                audioSource.src = audioURL;
+                audioPlayer.load(); 
+                
+                // שינוי עיקרי: ביטול השתקה אוטומטי בעת לחיצה על תחנה חדשה
+                if (audioPlayer.muted) {
+                    audioPlayer.muted = false;
+                    audioPlayer.volume = lastVolume;
+                    volumeSlider.value = lastVolume;
+                }
+            }
             audioPlayer.play(); 
 
+            // 2. עדכון האייקון ל-Pause והשם
+            muteUnmuteButton.innerHTML = '<i class="fas fa-pause"></i>'; 
+            stationDisplay.textContent = `מנגן: ${stationName}`;
+            
+            // 3. עדכון כפתורי הרדיו
             var radioItems = document.querySelectorAll('.radio-item');
             radioItems.forEach(item => {
                 item.classList.remove('active');
             });
-
             clickedElement.closest('.radio-item').classList.add('active');
+        }
+
+        // פונקציה להשתקה / ביטול השתקה
+        function toggleMuteUnmute() {
+            if (audioPlayer.muted) {
+                // ביטול השתקה: החזרת הווליום האחרון
+                audioPlayer.muted = false;
+                audioPlayer.volume = lastVolume;
+                muteUnmuteButton.innerHTML = '<i class="fas fa-pause"></i>'; // כעת לא מושתק = Pause
+                volumeSlider.value = lastVolume;
+            } else {
+                // השתקה: שמירת הווליום הנוכחי והשתקה
+                lastVolume = audioPlayer.volume > 0 ? audioPlayer.volume : 1;
+                audioPlayer.muted = true;
+                muteUnmuteButton.innerHTML = '<i class="fas fa-play"></i>'; // כעת מושתק = Play (משולש)
+                volumeSlider.value = 0;
+            }
+        }
+        
+        // פונקציה לשליטה בווליום דרך המחוון
+        function setVolume(volumeValue) {
+            audioPlayer.volume = volumeValue;
+            lastVolume = volumeValue; 
+
+            // עדכון מצב ההשתקה של הנגן
+            audioPlayer.muted = (volumeValue == 0);
+
+            // עדכון אייקון ההשתקה: אם הווליום מעל 0, מציג Pause; אם 0, מציג Play
+            if (volumeValue > 0) {
+                muteUnmuteButton.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                muteUnmuteButton.innerHTML = '<i class="fas fa-play"></i>';
+            }
         }
     </script>
 
