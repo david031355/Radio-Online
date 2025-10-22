@@ -25,8 +25,6 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
-        /* שכבת הכיסוי הוסרה לחלוטין */
-        
         /* סגנונות לתוכן הראשי */
         body {
             font-family: 'Noto Sans Hebrew', sans-serif;
@@ -202,7 +200,7 @@
 
     <div id="customPlayer">
         <button id="muteUnmuteButton" onclick="toggleMuteUnmute()">
-            <i class="fas fa-pause"></i> </button>
+            <i class="fas fa-play"></i> </button>
         
         <span id="currentStationDisplay">בחר תחנה להאזנה</span>
 
@@ -225,25 +223,49 @@
         // נאתחל את הווליום על פי המחוון
         audioPlayer.volume = volumeSlider.value;
         
-        // נגדיר מצב התחלתי: כפתור Play כיוון שהשיר מושתק (זה נדרש ע"י דפדפנים)
+        // נגדיר מצב התחלתי: כפתור Play (כיוון שהוידאו מושתק אוטומטית)
         muteUnmuteButton.innerHTML = '<i class="fas fa-play"></i>';
 
-        // פונקציה להפעלת שמע
+        // *************** הפונקציה המעודכנת והמתוקנת ל-AbortError ***************
         function playAudio(audioURL, clickedElement, stationName) {
             
-            // 1. טעינת הכתובת החדשה והפעלה
-            if (audioSource.src !== audioURL) {
+            // 1. טעינת הכתובת החדשה
+            const urlChanged = audioSource.src !== audioURL;
+
+            if (urlChanged) {
                 audioSource.src = audioURL;
                 audioPlayer.load(); 
-                
-                // שינוי עיקרי: ביטול השתקה אוטומטי בעת לחיצה על תחנה חדשה
-                if (audioPlayer.muted) {
-                    audioPlayer.muted = false;
-                    audioPlayer.volume = lastVolume;
-                    volumeSlider.value = lastVolume;
-                }
             }
-            audioPlayer.play(); 
+            
+            if (!urlChanged) {
+                // אם ה-URL לא השתנה, פשוט נגן מיד (כדי למנוע פרסומת חוזרת).
+                audioPlayer.play().catch(error => {
+                    console.log("Play failed on unchanged URL:", error);
+                });
+            } else {
+                // אם ה-URL השתנה, נשתמש ב-Event Listener להפעלת play
+                
+                // הגדרת פונקציה שתפעל לאחר טעינת הזרם החדש
+                // הפונקציה משתמשת ב-Closure כדי 'לזכור' את ה-Listener שהיא עצמה
+                const playOnLoad = function() {
+                    audioPlayer.play().catch(error => {
+                        console.log("Play failed after load:", error);
+                    });
+                    
+                    // הסר את ה-Listener כדי למנוע הפעלה חוזרת
+                    audioPlayer.removeEventListener('canplay', playOnLoad);
+                };
+                
+                // הוסף את ה-Listener: כשהנגן מוכן לנגן, בצע play
+                audioPlayer.addEventListener('canplay', playOnLoad);
+            }
+            
+            // ביטול השתקה אוטומטי (שומר על חוויית המשתמש)
+            if (audioPlayer.muted) {
+                audioPlayer.muted = false;
+                audioPlayer.volume = lastVolume;
+                volumeSlider.value = lastVolume;
+            }
 
             // 2. עדכון האייקון ל-Pause והשם
             muteUnmuteButton.innerHTML = '<i class="fas fa-pause"></i>'; 
@@ -256,20 +278,22 @@
             });
             clickedElement.closest('.radio-item').classList.add('active');
         }
+        // *************************************************************************
+
 
         // פונקציה להשתקה / ביטול השתקה
         function toggleMuteUnmute() {
             if (audioPlayer.muted) {
-                // ביטול השתקה: החזרת הווליום האחרון
+                // ביטול השתקה
                 audioPlayer.muted = false;
                 audioPlayer.volume = lastVolume;
-                muteUnmuteButton.innerHTML = '<i class="fas fa-pause"></i>'; // כעת לא מושתק = Pause
+                muteUnmuteButton.innerHTML = '<i class="fas fa-pause"></i>'; 
                 volumeSlider.value = lastVolume;
             } else {
-                // השתקה: שמירת הווליום הנוכחי והשתקה
+                // השתקה
                 lastVolume = audioPlayer.volume > 0 ? audioPlayer.volume : 1;
                 audioPlayer.muted = true;
-                muteUnmuteButton.innerHTML = '<i class="fas fa-play"></i>'; // כעת מושתק = Play (משולש)
+                muteUnmuteButton.innerHTML = '<i class="fas fa-play"></i>'; 
                 volumeSlider.value = 0;
             }
         }
@@ -282,7 +306,7 @@
             // עדכון מצב ההשתקה של הנגן
             audioPlayer.muted = (volumeValue == 0);
 
-            // עדכון אייקון ההשתקה: אם הווליום מעל 0, מציג Pause; אם 0, מציג Play
+            // עדכון אייקון ההשתקה
             if (volumeValue > 0) {
                 muteUnmuteButton.innerHTML = '<i class="fas fa-pause"></i>';
             } else {
